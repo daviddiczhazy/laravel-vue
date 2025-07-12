@@ -9,3 +9,6 @@ Route::get('/', function () {
 Route::get("/login", function() {
     return redirect()->away(env("SPA_URL") . "/login");
 })->name("login");
+
+
+Route::view('/{any}', 'welcome')->where('any', '.*');

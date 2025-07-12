@@ -1,17 +1,24 @@
 <template>
-    <div class="p-10 text-center">
-        <h1 class="text-2xl font-bold mb-4">Counter: {{ counter.count }}</h1>
-        <button
-            @click="counter.increment"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-            Increment
-        </button>
+    <div class="container mx-auto max-w-2xl">
+        <header class="flex justify-between items-center mt-4 mb-8">
+            <router-link to="/">
+                <h1 class="text-3xl font-bold">Vue zadanie</h1></router-link
+            >
+
+            <nav>
+                <router-link to="/users" class="mr-4">Použítelia</router-link>
+
+                <router-link to="/profile">Profil</router-link>
+            </nav>
+            <div>
+                <router-link to="/login-page">Prihlásenie</router-link>
+            </div>
+        </header>
+
+        <router-view />
     </div>
 </template>
 
 <script setup lang="ts">
-import { useCounterStore } from "./stores/counter";
-
-const counter = useCounterStore();
+// nič sem netreba
 </script>

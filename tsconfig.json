@@ -18,5 +18,9 @@
         },
         "types": ["vite/client"]
     },
-    "include": ["resources/js/**/*", "resources/**/*.vue"]
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*",
+        "resources/**/*.vue"
+    ]
 }
