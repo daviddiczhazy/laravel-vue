@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-lg mx-auto mt-8 space-y-4">
+    <div v-if="dataReady" class="max-w-lg mx-auto mt-8 space-y-4">
         <h2 class="text-xl font-bold">Upraviť objednávku</h2>
 
         <div>
@@ -57,6 +57,11 @@
             <span>{{ loading ? "Ukladám..." : "Uložiť zmeny" }}</span>
         </button>
     </div>
+    <div v-else>
+        <p class="max-w-lg mx-auto mt-8 space-y-4 text-blue-500">
+            Načítavam údaje...
+        </p>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -69,7 +74,7 @@ const route = useRoute();
 const router = useRouter();
 
 interface Status {
-    name: string;
+    name?: string;
     value: string;
 }
 
@@ -78,7 +83,7 @@ interface Order {
     customer_address: string;
     due_date: string;
     current_status: {
-        name: string;
+        name?: string;
         value: string;
         color?: string;
         slug?: string;
@@ -86,27 +91,37 @@ interface Order {
 }
 const order = ref<Order | null>();
 const loading = ref(false);
+const dataReady = ref(false);
 const orderName = ref("");
 const orderAddress = ref("");
 const orderDueDate = ref("");
-const orderStatus = ref<Status | null>({ name: "", value: "" });
+const orderStatus = ref("");
 
 const statuses = ref([]);
 
 const fetchMeta = async () => {
     const [statRes] = await Promise.all([axios.get("/api/order-statuses")]);
     statuses.value = statRes.data.data ?? statRes.data;
-    console.log("Fetched statuses:", statuses.value);
+};
+
+const getStatusNameByValue = (value: string) => {
+    return statuses.value.find((statusValue: Status) => {
+        if (statusValue.value === value) {
+            return statusValue.name;
+        }
+    });
 };
 
 const fetchOrder = async () => {
     try {
         const response = await axios.get(`/api/orders/${route.params.id}`);
         order.value = response.data.data ?? response.data;
-        orderName.value = order?.value.customer_name;
-        orderAddress.value = order?.value.customer_address;
-        orderDueDate.value = order?.value.due_date;
-        console.log("Fetched order:", order.value);
+        dataReady.value = true;
+
+        orderName.value = order.value?.customer_name ?? "";
+        orderAddress.value = order.value?.customer_address ?? "";
+        orderDueDate.value = order.value?.due_date ?? "";
+        orderStatus.value = order.value?.current_status?.value ?? "";
     } catch (err) {
         console.error("Chyba pri načítaní objednávky", err);
     }
@@ -114,15 +129,13 @@ const fetchOrder = async () => {
 
 const updateOrder = async () => {
     loading.value = true;
-    console.log("orderStatus:", orderStatus.value);
     order.value = {
         ...order.value,
         customer_name: orderName.value,
         customer_address: orderAddress.value,
         due_date: orderDueDate.value,
         current_status: {
-            name: orderStatus.value,
-            value: orderStatus.value,
+            value: orderStatus.value ?? "",
         },
     };
     try {

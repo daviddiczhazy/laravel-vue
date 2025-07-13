@@ -11,7 +11,10 @@
         </div>
 
         <!-- Spinner počas načítavania -->
-        <div v-if="loading" class="flex justify-center items-center h-32">
+        <div
+            v-if="orderStore.loading"
+            class="flex justify-center items-center h-32"
+        >
             <ProgressSpinner />
         </div>
         <div v-else class="overflow-x-auto">
@@ -20,28 +23,29 @@
                     <tr>
                         <th class="px-4 py-2">Meno zákazníka</th>
                         <th class="px-4 py-2">Adresa zákazníka</th>
-                        <th class="px-4 py-2">Status</th>
                         <th class="px-4 py-2">Kategória</th>
+                        <th class="px-4 py-2">Status</th>
                         <th class="px-4 py-2">Dátum</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="order in orders" :key="order.id">
+                    <tr v-for="order in orderStore.orders" :key="order.id">
                         <td class="border px-4 py-2">
                             <strong> {{ order?.customer_name }}</strong>
                         </td>
                         <td class="border px-4 py-2">
                             {{ order?.customer_address }}
                         </td>
-                        <td class="border px-4 py-2">
-                            {{ order.current_status?.name || "—" }}
-                        </td>
+
                         <td class="border px-4 py-2">
                             {{ order.category?.name || "—" }}
                         </td>
                         <td class="border px-4 py-2">
-                            {{ dayjs(order.created_at).format("DD.MM.YYYY") }}
+                            {{ order.current_status?.name || "—" }}
+                        </td>
+                        <td class="border px-4 py-2">
+                            {{ dayjs(order.due_date).format("DD.MM.YYYY") }}
                         </td>
                         <td class="border px-4 py-2">
                             <div class="flex justify-between">
@@ -87,7 +91,10 @@
     </div>
     <div v-else>
         <p class="text-red-500">
-            Nemáte prístup k tejto stránke. Prosím, prihláste sa.
+            Nemáte prístup k tejto stránke. Prosím,
+            <router-link to="/login-page" class="underline"
+                >prihláste sa</router-link
+            >.
         </p>
     </div>
 
@@ -117,7 +124,7 @@
     </div>
     <Dialog v-model:visible="showHistory" header="História statusov" modal>
         <ul>
-            <li v-for="(item, index) in statusHistory" :key="index">
+            <li v-for="(item, index) in orderStore.statusHistory" :key="index">
                 {{ item?.status?.name }} —
                 {{ dayjs(item?.created_at).format("DD.MM.YYYY HH:mm") }}
             </li>
@@ -127,26 +134,22 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import axios from "axios";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useOrderStore } from "@/stores/useOrderStore";
 import ProgressSpinner from "primevue/progressspinner";
 
 import Dialog from "primevue/dialog";
 
-const auth = useAuthStore();
-
 const router = useRouter();
-
-const orders = ref([]);
-const loading = ref(true);
+const auth = useAuthStore();
+const orderStore = useOrderStore();
 
 const showConfirm = ref(false);
 const orderToDelete = ref<number | null>(null);
 
 const showHistory = ref(false);
-const statusHistory = ref<any[]>([]);
 const selectedOrderId = ref<number | null>(null);
 
 const confirmDelete = (id: number) => {
@@ -157,10 +160,7 @@ const confirmDelete = (id: number) => {
 const deleteOrder = async () => {
     if (!orderToDelete.value) return;
     try {
-        await axios.delete(`/api/orders/${orderToDelete.value}`);
-        orders.value = orders.value.filter(
-            (order) => order.id !== orderToDelete.value
-        );
+        await orderStore.deleteOrder(orderToDelete.value);
         showConfirm.value = false;
         orderToDelete.value = null;
     } catch (err) {
@@ -175,26 +175,11 @@ const viewInvoice = (orderId: number) => {
 
 const openStatusHistory = async (orderId: number) => {
     selectedOrderId.value = orderId;
-    try {
-        const response = await axios.get(
-            `/api/orders/${orderId}/status-history`
-        );
-        console.log("Status history response:", response.data);
-        statusHistory.value = response.data.data; // uprav podľa skutočnej štruktúry
-        showHistory.value = true;
-    } catch (error) {
-        console.error("Chyba pri načítaní histórie:", error);
-    }
+    await orderStore.fetchStatusHistory(orderId);
+    showHistory.value = true;
 };
 
-onMounted(async () => {
-    try {
-        const response = await axios.get("/api/orders");
-        orders.value = response.data.data ?? response.data;
-    } catch (error) {
-        console.error("Chyba pri načítaní objednávok", error);
-    } finally {
-        loading.value = false;
-    }
+onMounted(() => {
+    orderStore.fetchOrders();
 });
 </script>

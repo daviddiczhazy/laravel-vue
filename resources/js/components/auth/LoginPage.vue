@@ -11,12 +11,10 @@ const router = useRouter();
 const handleLogin = async () => {
     await auth.login(email.value, password.value);
 
-    // Ak je token, ale ešte nemáme user načítaného
-    if (auth.token && !auth.user) {
-        await auth.fetchUser();
+    if (auth.token) {
+        await auth.fetchUser(); // počkaj na usera
     }
 
-    // Ak už máme používateľa, presmeruj
     if (auth.user) {
         router.push({ name: "home" });
     } else {

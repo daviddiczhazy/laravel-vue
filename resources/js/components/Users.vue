@@ -19,7 +19,6 @@ const fetchUsers = async () => {
     try {
         const response = await axios.get("api/users");
         users.value = response.data.data; // Assuming the API returns data in this format
-        console.log("Fetched users:", users.value);
     } catch (error) {
         console.error("Error fetching users:", error);
     } finally {
@@ -72,10 +71,12 @@ onMounted(() => {
             </tbody>
         </table>
     </div>
-    <div v-else class="p-6">
-        <h1 class="text-2xl font-bold mb-6">Prístup zamietnutý</h1>
-        <p>
-            Prosím, prihláste sa ako administrátor pre zobrazenie používateľov.
+    <div v-else>
+        <p class="text-red-500">
+            Nemáte prístup k tejto stránke. Prosím,
+            <router-link to="/login-page" class="underline"
+                >prihláste sa</router-link
+            >.
         </p>
     </div>
 </template>

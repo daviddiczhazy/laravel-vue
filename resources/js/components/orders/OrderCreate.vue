@@ -72,14 +72,23 @@
             />
         </div>
         <div class="flex justify-between items-center mb-6 pb-4">
-            <Button
-                label="Vytvoriť objednávku"
-                class="btn btn-blue border-button"
+            <button
                 @click="submitOrder"
-            />
+                :disabled="loading"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+                <span
+                    v-if="loading"
+                    class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                ></span>
+                <span>{{
+                    loading ? "Vytváram..." : "Vytvoriť objednávku"
+                }}</span>
+            </button>
+
             <router-link
                 to="/orders"
-                class="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-600"
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
             >
                 Naspäť na zoznam
             </router-link>
@@ -94,7 +103,6 @@ import axios from "axios";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Dropdown from "primevue/dropdown";
-import Button from "primevue/button";
 
 import Calendar from "primevue/calendar";
 import { useRouter } from "vue-router";
@@ -115,6 +123,7 @@ const order = ref({
 
 const categories = ref([]);
 const statuses = ref([]);
+const loading = ref(false);
 
 const fetchMeta = async () => {
     const [catRes, statRes] = await Promise.all([
@@ -127,11 +136,14 @@ const fetchMeta = async () => {
 
 const submitOrder = async () => {
     try {
+        loading.value = true;
         await axios.post("/api/orders", order.value);
         router.push("/orders");
     } catch (err) {
         console.error("Chyba pri vytváraní:", err);
         alert("Chyba pri vytváraní objednávky.");
+    } finally {
+        loading.value = false;
     }
 };
 
