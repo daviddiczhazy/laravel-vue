@@ -13,6 +13,8 @@ interface Userdata {
     lastname: string;
 }
 
+const avatar = ref<File | null>(null);
+
 const user = ref<Userdata | null>(null);
 
 const fetchUser = async () => {
@@ -24,6 +26,36 @@ const fetchUser = async () => {
         console.error("Error fetching users:", error);
     }
 };
+
+function onFileChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+        avatar.value = target.files[0];
+    }
+}
+
+async function handleAvatarUpload() {
+    if (!avatar.value) return;
+
+    const formData = new FormData();
+    formData.append("avatar", avatar.value);
+    formData.append("email", "admin@a");
+    formData.append("firstname", "Min");
+    formData.append("lastname", "Ad");
+
+    try {
+        await axios.post("/api/user/update-profile", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        alert("Avatar úspešne nahratý ✅");
+        fetchUser(); // znovu načíta user po uploade
+    } catch (error) {
+        console.error("Chyba pri nahrávaní avataru:", error);
+    }
+}
 
 onMounted(() => {
     if (auth.isAuthenticated) {
@@ -39,6 +71,24 @@ onMounted(() => {
         v-if="auth.isAuthenticated"
         class="max-w-md mx-auto mt-16 bg-white p-6 rounded shadow"
     >
+        <div v-if="user?.avatar" class="mb-4">
+            <img
+                :src="`${user?.avatar?.image}`"
+                alt="Avatar"
+                class="w-24 h-24 rounded-full"
+            />
+        </div>
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Zmeniť avatar:</label>
+            <input type="file" @change="onFileChange" class="mb-2" />
+            <button
+                @click="handleAvatarUpload"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+                Nahrať
+            </button>
+        </div>
+        <hr class="mb-4" />
         <p class="mb-4">Email: {{ user?.email }}</p>
         <p class="mb-4">Meno: {{ user?.firstname }}</p>
         <p class="mb-4">Priezvisko: {{ user?.lastname }}</p>

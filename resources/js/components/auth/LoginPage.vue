@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useRouter } from "vue-router";
 
 const email = ref("");
 const password = ref("");
 const auth = useAuthStore();
+const router = useRouter();
 
 const handleLogin = async () => {
     await auth.login(email.value, password.value);
+
+    // Ak je token, ale ešte nemáme user načítaného
+    if (auth.token && !auth.user) {
+        await auth.fetchUser();
+    }
+
+    // Ak už máme používateľa, presmeruj
+    if (auth.user) {
+        router.push({ name: "home" });
+    } else {
+        console.error("Prihlásenie prebehlo, ale používateľ sa nenačítal.");
+    }
 };
 
 const isLogged = computed(() => auth.isAuthenticated);
@@ -62,7 +76,7 @@ const isLogged = computed(() => auth.isAuthenticated);
                 </button>
             </form>
         </div>
-        <p class="mt-4">
+        <p v-if="!isLogged" class="mt-4">
             <router-link
                 to="/zabudnute-heslo"
                 class="text-blue-600 hover:underline"

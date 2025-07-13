@@ -39,6 +39,31 @@ const routes = [
     component: () => import("@/components/auth/ResetPassword.vue"),
     meta: { guestOnly: true },
   },
+  {
+    path: "/orders",
+    name: "orders",
+    component: () => import("@/components/orders/OrdersTable.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/orders/create",
+    name: "order-create",
+    component: () => import("@/components/orders/OrderCreate.vue"),
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: "/categories/create",
+    name: "category-create",
+    component: () => import("@/components/orders/CategoryCreate.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/orders/:id/edit",
+    name: "order-edit",
+    component: () => import("@/components/orders/OrderEdit.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

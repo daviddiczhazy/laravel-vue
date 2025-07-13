@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto max-w-2xl">
+    <div class="container mx-auto max-w-3xl">
         <header class="flex justify-between items-center mt-4 mb-8">
             <router-link to="/">
                 <h1 class="text-3xl font-bold">Vue zadanie</h1></router-link
@@ -7,6 +7,7 @@
 
             <nav>
                 <router-link to="/users" class="mr-4">Použítelia</router-link>
+                <router-link to="/orders" class="mr-4">Objednávky</router-link>
 
                 <router-link to="/profile">Profil</router-link>
             </nav>
