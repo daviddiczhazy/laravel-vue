@@ -10,3 +10,6 @@ Návod na rozbehanie cez Docker:
 - sail artisan migrate
 - sail artisan db:seed
 
+Rozbehanie Vue:
+- npm install
+- npm run dev
